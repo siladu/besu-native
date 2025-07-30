@@ -38,10 +38,10 @@ var bn254Modulus = new(big.Int).SetBytes([]byte{
 })
 
 //export eip196altbn128G1Add
-func eip196altbn128G1Add(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInputLen C.int, cOutputLen, cErrorLen *C.int) C.int {
+func eip196altbn128G1Add(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInputLen, cOutputLen, cErrorLen C.int) C.int {
 	inputLen := int(cInputLen)
-	errorLen := (*int)(unsafe.Pointer(cErrorLen))
-	outputLen := (*int)(unsafe.Pointer(cOutputLen))
+	errorLen := int(cErrorLen)
+	outputLen := int(cOutputLen)
 
 	// Convert error C pointers to Go slices
 	errorBuf := castErrorBufferEIP196(javaErrorBuf, errorLen)
@@ -55,7 +55,7 @@ func eip196altbn128G1Add(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInp
 	input := (*[2 * EIP196PreallocateForG1]byte)(unsafe.Pointer(javaInputBuf))[:inputLen:inputLen]
 
 	if inputLen == 0 {
-		*outputLen = EIP196PreallocateForG1
+		outputLen = EIP196PreallocateForG1
 		return 0
 	}
 
@@ -74,7 +74,7 @@ func eip196altbn128G1Add(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInp
 		if isAllZeroEIP196(input, 64, 64) {
 			ret := p0.Marshal()
 			g1AffineEncode(ret, javaOutputBuf)
-			*outputLen = EIP196PreallocateForG1
+			outputLen = EIP196PreallocateForG1
 			return 0
 		}
 	}
@@ -94,23 +94,23 @@ func eip196altbn128G1Add(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInp
 	// marshal the resulting point and encode directly to the output buffer
 	ret := result.Marshal()
 	g1AffineEncode(ret, javaOutputBuf)
-	*outputLen = EIP196PreallocateForG1
+	outputLen = EIP196PreallocateForG1
 	return 0
 
 }
 
 //export eip196altbn128G1Mul
-func eip196altbn128G1Mul(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInputLen C.int, cOutputLen, cErrorLen *C.int) C.int {
+func eip196altbn128G1Mul(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInputLen C.int, cOutputLen, cErrorLen C.int) C.int {
 	inputLen := int(cInputLen)
-	errorLen := (*int)(unsafe.Pointer(cErrorLen))
-	outputLen := (*int)(unsafe.Pointer(cOutputLen))
+	errorLen := int(cErrorLen)
+	outputLen := int(cOutputLen)
 
 	// Convert error C pointers to Go slices
 	errorBuf := castErrorBufferEIP196(javaErrorBuf, errorLen)
 
 	if inputLen == 0 {
 		// zero input returns 0
-		*outputLen = EIP196PreallocateForG1
+		outputLen = EIP196PreallocateForG1
 		return 0
 	}
 
@@ -124,7 +124,7 @@ func eip196altbn128G1Mul(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInp
 
 	// infinity check:
 	if isAllZeroEIP196(input, 0, 64) {
-		*outputLen = EIP196PreallocateForG1
+		outputLen = EIP196PreallocateForG1
 		return 0
 	}
 
@@ -139,7 +139,7 @@ func eip196altbn128G1Mul(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInp
 
 	if inputLen < EIP196PreallocateForG1+1 {
 		// if there is not even a partial input scalar, return 0
-		*outputLen = EIP196PreallocateForG1
+		outputLen = EIP196PreallocateForG1
 		return 0
 	}
 
@@ -166,15 +166,15 @@ func eip196altbn128G1Mul(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInp
 	// marshal the resulting point and encode directly to the output buffer
 	ret := result.Marshal()
 	g1AffineEncode(ret, javaOutputBuf)
-	*outputLen = EIP196PreallocateForG1
+	outputLen = EIP196PreallocateForG1
 	return 0
 }
 
 //export eip196altbn128Pairing
-func eip196altbn128Pairing(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInputLen C.int, cOutputLen, cErrorLen *C.int) C.int {
+func eip196altbn128Pairing(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cInputLen, cOutputLen, cErrorLen C.int) C.int {
 	inputLen := int(cInputLen)
-	errorLen := (*int)(unsafe.Pointer(cErrorLen))
-	outputLen := (*int)(unsafe.Pointer(cOutputLen))
+	errorLen := int(cErrorLen)
+	outputLen := int(cOutputLen)
 
 	// Convert error C pointers to Go slices
 	output := castBufferEIP196(javaOutputBuf, outputLen)
@@ -182,7 +182,7 @@ func eip196altbn128Pairing(javaInputBuf, javaOutputBuf, javaErrorBuf *C.char, cI
 	// Convert error C pointers to Go slices
 	errorBuf := castErrorBufferEIP196(javaErrorBuf, errorLen)
 
-	*outputLen = 32
+	outputLen = 32
 
 	if inputLen == 0 {
 		output[31] = 0x01
@@ -350,27 +350,27 @@ func isAllZeroEIP196(data []byte, offset, length int) bool {
 	return true
 }
 
-func dryError(err error, errorBuf []byte, outputLen, errorLen *int) {
+func dryError(err error, errorBuf []byte, outputLen, errorLen int) {
 	errStr := "invalid input parameters, " + err.Error()
 	copy(errorBuf, errStr)
-	*outputLen = 0
-	*errorLen = len(errStr)
+	outputLen = 0
+	errorLen = len(errStr)
 }
 
 func castBufferToSliceEIP196(buf unsafe.Pointer, length int) []byte {
 	return unsafe.Slice((*byte)(buf), length)
 }
 
-func castBufferEIP196(javaOutputBuf *C.char, length *int) []byte {
-	bufSize := *length
+func castBufferEIP196(javaOutputBuf *C.char, length int) []byte {
+	bufSize := length
 	if bufSize != EIP196PreallocateForResult {
 		bufSize = EIP196PreallocateForResult
 	}
 	return (*[EIP196PreallocateForResult]byte)(unsafe.Pointer(javaOutputBuf))[:bufSize:bufSize]
 }
 
-func castErrorBufferEIP196(javaOutputBuf *C.char, length *int) []byte {
-	bufSize := *length
+func castErrorBufferEIP196(javaOutputBuf *C.char, length int) []byte {
+	bufSize := length
 	if bufSize != EIP196PreallocateForError {
 		bufSize = EIP196PreallocateForError
 	}

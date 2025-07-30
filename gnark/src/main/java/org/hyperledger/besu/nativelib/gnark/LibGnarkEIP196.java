@@ -41,13 +41,19 @@ public class LibGnarkEIP196 {
     int ret = -1;
     switch(op) {
       case EIP196_ADD_OPERATION_RAW_VALUE:
-        ret = eip196altbn128G1Add(i, output, err, i_len, o_len, err_len);
+        ret = eip196altbn128G1Add(i, output, err, i_len, EIP196_PREALLOCATE_FOR_RESULT_BYTES, EIP196_PREALLOCATE_FOR_ERROR_BYTES);
+//        o_len.setValue(64);
+//        err_len.setValue(0);
         break;
       case  EIP196_MUL_OPERATION_RAW_VALUE:
-        ret = eip196altbn128G1Mul(i, output, err, i_len, o_len, err_len);
+        ret = eip196altbn128G1Mul(i, output, err, i_len, EIP196_PREALLOCATE_FOR_RESULT_BYTES, EIP196_PREALLOCATE_FOR_ERROR_BYTES);
+//        o_len.setValue(64);
+//        err_len.setValue(0);
         break;
       case EIP196_PAIR_OPERATION_RAW_VALUE:
-        ret = eip196altbn128Pairing(i, output, err, i_len, o_len, err_len);
+        ret = eip196altbn128Pairing(i, output, err, i_len, EIP196_PREALLOCATE_FOR_RESULT_BYTES, EIP196_PREALLOCATE_FOR_ERROR_BYTES);
+//        o_len.setValue(64);
+//        err_len.setValue(0);
         break;
       default:
         throw new RuntimeException("Not Implemented EIP-196 operation " + op);
@@ -60,17 +66,17 @@ public class LibGnarkEIP196 {
       byte[] input,
       byte[] output,
       byte[] error,
-      int inputSize, IntByReference outputSize, IntByReference err_len);
+      int inputSize, int outputSize, int err_len);
 
   public static native int eip196altbn128G1Mul(
       byte[] input,
       byte[] output,
       byte[] error,
-      int inputSize, IntByReference output_len, IntByReference err_len);
+      int inputSize, int output_len, int err_len);
 
   public static native int eip196altbn128Pairing(
       byte[] input,
       byte[] output,
       byte[] error,
-      int inputSize, IntByReference output_len, IntByReference err_len);
+      int inputSize, int output_len, int err_len);
 }
